@@ -87,7 +87,7 @@ function M.register_autocmds()
   -- When entering a note buffer, map <CR> to follow WikiLinks
   vim.api.nvim_create_autocmd("BufEnter", {
     group = group,
-    pattern = M.config.notes_dir .. "/*." .. M.config.extension,
+    pattern = M.config.notes_dir .. "/**/*." .. M.config.extension,
     callback = function()
       vim.keymap.set("n", "<CR>", M.follow_link, {
         buffer = true,
@@ -100,7 +100,7 @@ function M.register_autocmds()
   -- Auto-save notes on change
   vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
     group = group,
-    pattern = M.config.notes_dir .. "/*." .. M.config.extension,
+    pattern = M.config.notes_dir .. "/**/*." .. M.config.extension,
     callback = function()
       if vim.bo.modified and vim.bo.buftype == "" then
         vim.cmd("silent! write")
