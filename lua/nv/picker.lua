@@ -22,26 +22,31 @@ local function open_or_create(win, force_new)
   local item = picker:current()
   local current_line = picker.input.filter.search
 
+  -- Stop insert mode and close the picker
+  vim.cmd.stopinsert()
   picker:close()
 
-  if item and item.file and not force_new then
-    -- 1. Open existing note
-    vim.cmd("edit " .. item.file)
-  elseif current_line and current_line ~= "" then
-    -- 2. Create new note with the prompt text
-    local filename = clean_filename(current_line)
-    local filepath = nv.config.notes_dir .. "/" .. filename
-    
-    -- Edit the file (using ++p to build nested folders if any)
-    vim.cmd("edit ++p " .. filepath)
-    
-    -- Insert the prompt text as the H1 title in the new note
-    local title = "# " .. current_line
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { title, "", "" })
-    vim.cmd("write")
-  else
-    print("nv.nvim: No search query or selection provided.")
-  end
+  -- Schedule opening/creating the file to happen after the picker is fully closed
+  vim.schedule(function()
+    if item and item.file and not force_new then
+      -- 1. Open existing note
+      vim.cmd("edit " .. item.file)
+    elseif current_line and current_line ~= "" then
+      -- 2. Create new note with the prompt text
+      local filename = clean_filename(current_line)
+      local filepath = nv.config.notes_dir .. "/" .. filename
+      
+      -- Edit the file (using ++p to build nested folders if any)
+      vim.cmd("edit ++p " .. filepath)
+      
+      -- Insert the prompt text as the H1 title in the new note
+      local title = "# " .. current_line
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, { title, "", "" })
+      vim.cmd("write")
+    else
+      print("nv.nvim: No search query or selection provided.")
+    end
+  end)
 end
 
 -- Main picker function using snacks.nvim
