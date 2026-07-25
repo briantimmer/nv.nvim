@@ -11,7 +11,14 @@ local function clean_filename(prompt)
 end
 
 -- Open or create a file
-local function open_or_create(picker, force_new)
+local function open_or_create(win, force_new)
+  local snacks = require("snacks")
+  local picker = snacks.picker.get()[1]
+  if not picker then
+    print("nv.nvim: Active picker not found.")
+    return
+  end
+
   local item = picker:current()
   local current_line = picker.input.filter.search
 
