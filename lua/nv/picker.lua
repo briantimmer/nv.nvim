@@ -30,16 +30,8 @@ local function get_main_window()
   return nil
 end
 
--- Open or create a file
-local function open_or_create(win, force_new)
-  local snacks = require("snacks")
-  local picker = snacks.picker.get()[1]
-  if not picker then
-    print("nv.nvim: Active picker not found.")
-    return
-  end
-
-  local item = picker:current()
+-- Open or create a file (acting as the confirm handler)
+local function open_or_create(picker, item)
   local current_line = vim.trim(picker.input:get() or "")
 
   -- Stop insert mode and close the picker
@@ -53,7 +45,7 @@ local function open_or_create(win, force_new)
       vim.api.nvim_set_current_win(main_win)
     end
 
-    if item and item.file and not force_new then
+    if item and item.file then
       -- 1. Open existing note
       vim.cmd("edit " .. item.file)
     elseif current_line and current_line ~= "" then
@@ -91,20 +83,17 @@ function M.search_notes()
   snacks.picker.files({
     cwd = nv.config.notes_dir,
     title = "Notational Velocity Notes",
+    confirm = open_or_create, -- Use open_or_create as the confirm action
     win = {
       input = {
         keys = {
-          -- Replace Enter to open selected, or create file if selection is empty
-          ["<CR>"] = {
-            function(picker)
-              open_or_create(picker, false)
-            end,
-            mode = { "i", "n" },
-          },
           -- Ctrl-y to force-create a new note with prompt, even if matches exist
           ["<C-y>"] = {
-            function(picker)
-              open_or_create(picker, true)
+            function(win)
+              local active_picker = snacks.picker.get()[1]
+              if active_picker then
+                open_or_create(active_picker, nil) -- passing nil for item forces creation
+              end
             end,
             mode = { "i", "n" },
           },
