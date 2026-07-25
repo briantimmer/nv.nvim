@@ -20,7 +20,7 @@ local function open_or_create(win, force_new)
   end
 
   local item = picker:current()
-  local current_line = picker.input.filter.search
+  local current_line = vim.trim(picker.input:get() or "")
 
   -- Stop insert mode and close the picker
   vim.cmd.stopinsert()
