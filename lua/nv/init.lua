@@ -82,7 +82,7 @@ function M.follow_link()
 end
 
 function M.register_autocmds()
-  local group = vim.api.nvim_create_augroup("nv_wikilinks", { clear = true })
+  local group = vim.api.nvim_create_augroup("nv_autocmds", { clear = true })
   
   -- When entering a note buffer, map <CR> to follow WikiLinks
   vim.api.nvim_create_autocmd("BufEnter", {
@@ -94,6 +94,17 @@ function M.register_autocmds()
         expr = true,
         desc = "Follow WikiLink under cursor",
       })
+    end,
+  })
+
+  -- Auto-save notes on change
+  vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
+    group = group,
+    pattern = M.config.notes_dir .. "/*." .. M.config.extension,
+    callback = function()
+      if vim.bo.modified and vim.bo.buftype == "" then
+        vim.cmd("silent! write")
+      end
     end,
   })
 end
