@@ -8,6 +8,28 @@ local function clean_filename(prompt)
   return nv.clean_filename(prompt)
 end
 
+-- Find the first valid non-floating, non-sidebar window
+local function get_main_window()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local config = vim.api.nvim_win_get_config(win)
+    if config.relative == "" then
+      local buf = vim.api.nvim_win_get_buf(win)
+      local buftype = vim.bo[buf].buftype
+      local filetype = vim.bo[buf].filetype
+      if buftype == "" and filetype ~= "neo-tree" and filetype ~= "NvimTree" and filetype ~= "oil" and filetype ~= "netrw" then
+        return win
+      end
+    end
+  end
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local config = vim.api.nvim_win_get_config(win)
+    if config.relative == "" then
+      return win
+    end
+  end
+  return nil
+end
+
 -- Open or create a file
 local function open_or_create(win, force_new)
   local snacks = require("snacks")
@@ -26,6 +48,11 @@ local function open_or_create(win, force_new)
 
   -- Schedule opening/creating the file to happen after the picker is fully closed
   vim.schedule(function()
+    local main_win = get_main_window()
+    if main_win then
+      vim.api.nvim_set_current_win(main_win)
+    end
+
     if item and item.file and not force_new then
       -- 1. Open existing note
       vim.cmd("edit " .. item.file)
