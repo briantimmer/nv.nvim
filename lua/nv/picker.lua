@@ -36,8 +36,14 @@ local function open_or_create(win, force_new)
       local filename = clean_filename(current_line)
       local filepath = nv.config.notes_dir .. "/" .. filename
       
-      -- Edit the file (using ++p to build nested folders if any)
-      vim.cmd("edit ++p " .. filepath)
+      -- Ensure the parent directory exists
+      local dir = vim.fn.fnamemodify(filepath, ":h")
+      if vim.fn.isdirectory(dir) == 0 then
+        vim.fn.mkdir(dir, "p")
+      end
+      
+      -- Edit the file
+      vim.cmd("edit " .. vim.fn.fnameescape(filepath))
       
       -- Insert the prompt text as the H1 title in the new note
       local title = "# " .. current_line
