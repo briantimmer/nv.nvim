@@ -129,18 +129,23 @@ function M.register_autocmds()
         end
 
         if path == notes_path then
-          -- Run in schedule to prevent block/layout warning during editor initialization
-          vim.schedule(function()
-            -- Close Neo-tree if it hijacked the window
+          -- Defer by 50ms to allow lazy-loaded Neo-tree and directory explorer to finish rendering first
+          vim.defer_fn(function()
+            -- Close Neo-tree if it was opened
             if vim.fn.exists(":Neotree") == 2 then
-              vim.cmd("Neotree close")
+              pcall(function()
+                require("neo-tree.command").execute({ action = "close" })
+              end)
             end
 
+            -- Delete the directory buffer if valid
             if vim.api.nvim_buf_is_valid(args.buf) then
-              vim.api.nvim_buf_delete(args.buf, { force = true })
+              pcall(vim.api.nvim_buf_delete, args.buf, { force = true })
             end
+
+            -- Launch NV picker
             require("nv.picker").search_notes()
-          end)
+          end, 50)
         end
       end,
     })
