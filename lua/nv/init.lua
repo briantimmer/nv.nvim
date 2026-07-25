@@ -22,7 +22,7 @@ end
 
 -- Helper to turn text into a clean filename
 function M.clean_filename(prompt)
-  local clean = prompt:gsub("[^%w%s%-]", ""):gsub("%s+", "-"):lower()
+  local clean = prompt:gsub("[^%w%s%-/]", ""):gsub("%s+", "-"):lower()
   return clean .. "." .. M.config.extension
 end
 
