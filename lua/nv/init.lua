@@ -85,10 +85,16 @@ end
 function M.register_autocmds()
   local group = vim.api.nvim_create_augroup("nv_autocmds", { clear = true })
   
+  -- Match both root files and subfolder files
+  local note_patterns = {
+    M.config.notes_dir .. "/*." .. M.config.extension,
+    M.config.notes_dir .. "/**/*." .. M.config.extension,
+  }
+
   -- When entering a note buffer, map <CR> to follow WikiLinks
   vim.api.nvim_create_autocmd("BufEnter", {
     group = group,
-    pattern = M.config.notes_dir .. "/**/*." .. M.config.extension,
+    pattern = note_patterns,
     callback = function()
       vim.keymap.set("n", "<CR>", M.follow_link, {
         buffer = true,
@@ -101,7 +107,7 @@ function M.register_autocmds()
   -- Auto-save notes on change
   vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
     group = group,
-    pattern = M.config.notes_dir .. "/**/*." .. M.config.extension,
+    pattern = note_patterns,
     callback = function()
       if vim.bo.modified and vim.bo.buftype == "" then
         vim.cmd("silent! write")
