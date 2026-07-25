@@ -56,21 +56,24 @@ function M.follow_link()
       local filename = M.clean_filename(link)
       local filepath = M.config.notes_dir .. "/" .. filename
 
-      -- Ensure the parent directory exists
-      local dir = vim.fn.fnamemodify(filepath, ":h")
-      if vim.fn.isdirectory(dir) == 0 then
-        vim.fn.mkdir(dir, "p")
-      end
+      -- Schedule the navigation to run outside the restricted expression evaluation context
+      vim.schedule(function()
+        -- Ensure the parent directory exists
+        local dir = vim.fn.fnamemodify(filepath, ":h")
+        if vim.fn.isdirectory(dir) == 0 then
+          vim.fn.mkdir(dir, "p")
+        end
 
-      -- Edit the file
-      vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+        -- Edit the file
+        vim.cmd("edit " .. vim.fn.fnameescape(filepath))
 
-      -- If it's a new file, write heading
-      if vim.fn.filereadable(filepath) == 0 then
-        local title = "# " .. link
-        vim.api.nvim_buf_set_lines(0, 0, -1, false, { title, "", "" })
-        vim.cmd("write")
-      end
+        -- If it's a new file, write heading
+        if vim.fn.filereadable(filepath) == 0 then
+          local title = "# " .. link
+          vim.api.nvim_buf_set_lines(0, 0, -1, false, { title, "", "" })
+          vim.cmd("write")
+        end
+      end)
       return ""
     end
   end
