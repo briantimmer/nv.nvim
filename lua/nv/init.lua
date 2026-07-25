@@ -131,6 +131,11 @@ function M.register_autocmds()
         if path == notes_path then
           -- Run in schedule to prevent block/layout warning during editor initialization
           vim.schedule(function()
+            -- Close Neo-tree if it hijacked the window
+            if vim.fn.exists(":Neotree") == 2 then
+              vim.cmd("Neotree close")
+            end
+
             if vim.api.nvim_buf_is_valid(args.buf) then
               vim.api.nvim_buf_delete(args.buf, { force = true })
             end
