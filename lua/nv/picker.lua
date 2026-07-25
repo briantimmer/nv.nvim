@@ -5,9 +5,7 @@ local M = {}
 
 -- Helper to turn prompt text into a clean filename
 local function clean_filename(prompt)
-  -- Remove special chars, replace spaces with dashes, lowercase it
-  local clean = prompt:gsub("[^%w%s%-]", ""):gsub("%s+", "-"):lower()
-  return clean .. "." .. nv.config.extension
+  return nv.clean_filename(prompt)
 end
 
 -- Open or create a file
