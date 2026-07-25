@@ -5,6 +5,7 @@ local M = {}
 M.config = {
   notes_dir = vim.fn.expand("~/notes"), -- Default directory for notes
   extension = "md",                     -- Default file extension (.md)
+  auto_open_on_dir = true,              -- Auto-open NV if directory is opened
 }
 
 -- Setup function to override defaults
@@ -107,6 +108,38 @@ function M.register_autocmds()
       end
     end,
   })
+
+  -- Auto-open NV if notes directory is opened
+  if M.config.auto_open_on_dir then
+    vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter" }, {
+      group = group,
+      callback = function(args)
+        local bufname = vim.api.nvim_buf_get_name(args.buf)
+        if bufname == "" then return end
+
+        local path = vim.fn.fnamemodify(bufname, ":p")
+        -- Normalize trailing slashes
+        if path:sub(-1) == "/" or path:sub(-1) == "\\" then
+          path = path:sub(1, -2)
+        end
+
+        local notes_path = vim.fn.fnamemodify(M.config.notes_dir, ":p")
+        if notes_path:sub(-1) == "/" or notes_path:sub(-1) == "\\" then
+          notes_path = notes_path:sub(1, -2)
+        end
+
+        if path == notes_path then
+          -- Run in schedule to prevent block/layout warning during editor initialization
+          vim.schedule(function()
+            if vim.api.nvim_buf_is_valid(args.buf) then
+              vim.api.nvim_buf_delete(args.buf, { force = true })
+            end
+            require("nv.picker").search_notes()
+          end)
+        end
+      end,
+    })
+  end
 end
 
 return M
