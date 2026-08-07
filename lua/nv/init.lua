@@ -23,8 +23,55 @@ end
 
 -- Helper to turn text into a clean filename
 function M.clean_filename(prompt)
-  local clean = prompt:gsub("[^%w%s%-/]", ""):gsub("%s+", "-"):lower()
-  return clean .. "." .. M.config.extension
+  -- Strip ASCII punctuation that is unsafe in filenames, but preserve bytes
+  -- >= 0x80 so Unicode letters and symbols survive (Lua's %w is ASCII-only).
+  local clean = (prompt or ""):gsub("[^%w%s%-/_%.\128-\255]", "")
+    :gsub("%s+", "-")          -- whitespace runs -> dash
+    :gsub("%-+", "-")          -- collapse dash runs
+    :gsub("^[%-.]+", "")       -- strip leading dashes/dots
+    :gsub("[%-.%/]+$", "")     -- strip trailing dashes/dots/slashes
+    :lower()
+
+  -- Drop empty, "." and ".." path segments so note titles cannot traverse out
+  -- of notes_dir (e.g. "a/../../etc") while still allowing subdirectories.
+  local segments = {}
+  for segment in clean:gmatch("[^/]+") do
+    if segment ~= "." and segment ~= ".." then
+      segments[#segments + 1] = segment
+    end
+  end
+  clean = table.concat(segments, "/")
+
+  -- Guard against empty/garbage input
+  if clean == "" then
+    clean = "untitled-" .. os.date("%Y-%m-%d-%H%M%S")
+  end
+
+  -- Avoid duplicating the extension (e.g. a query ending in ".md")
+  if clean:sub(-#M.config.extension - 1) ~= "." .. M.config.extension then
+    clean = clean .. "." .. M.config.extension
+  end
+  return clean
+end
+
+-- Open an existing note, or create it (with an H1 title) if it doesn't exist
+function M.open_note(filepath, title)
+  -- Ensure the parent directory exists
+  local dir = vim.fn.fnamemodify(filepath, ":h")
+  if vim.fn.isdirectory(dir) == 0 then
+    vim.fn.mkdir(dir, "p")
+  end
+
+  -- Check existence before editing so new-file detection isn't skewed by
+  -- buffers already loaded in memory
+  local is_new = vim.fn.filereadable(filepath) == 0
+  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+
+  -- Only populate the H1 title for genuinely new notes
+  if is_new and title then
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# " .. title, "", "" })
+    vim.cmd("write")
+  end
 end
 
 -- Navigate WikiLink under cursor
@@ -35,7 +82,7 @@ function M.follow_link()
 
   -- Find nearest '[[' to the left
   local left = nil
-  for i = col, 1, -1 do
+  for i = col + 1, 1, -1 do
     if line:sub(i - 1, i) == "[[" then
       left = i + 1
       break
@@ -44,7 +91,7 @@ function M.follow_link()
 
   -- Find nearest ']]' to the right
   local right = nil
-  for i = col, #line do
+  for i = math.max(col - 1, 1), #line do
     if line:sub(i, i + 1) == "]]" then
       right = i - 1
       break
@@ -59,21 +106,7 @@ function M.follow_link()
 
       -- Schedule the navigation to run outside the restricted expression evaluation context
       vim.schedule(function()
-        -- Ensure the parent directory exists
-        local dir = vim.fn.fnamemodify(filepath, ":h")
-        if vim.fn.isdirectory(dir) == 0 then
-          vim.fn.mkdir(dir, "p")
-        end
-
-        -- Edit the file
-        vim.cmd("edit " .. vim.fn.fnameescape(filepath))
-
-        -- If it's a new file, write heading
-        if vim.fn.filereadable(filepath) == 0 then
-          local title = "# " .. link
-          vim.api.nvim_buf_set_lines(0, 0, -1, false, { title, "", "" })
-          vim.cmd("write")
-        end
+        M.open_note(filepath, link)
       end)
       return ""
     end
@@ -82,13 +115,18 @@ function M.follow_link()
   return "<CR>"
 end
 
+local SAVE_DELAY = 300
+
 function M.register_autocmds()
   local group = vim.api.nvim_create_augroup("nv_autocmds", { clear = true })
-  
-  -- Match both root files and subfolder files
+
+  -- In autocmd patterns `*` already matches across path separators, so a
+  -- single pattern covers root and nested notes. Escape metacharacters in
+  -- the directory path so it is matched literally.
+  local dir = vim.fn.expand(M.config.notes_dir):gsub("/+$", "")
+  local escaped_dir = vim.fn.escape(dir, "\\*?[]{}~$,")
   local note_patterns = {
-    M.config.notes_dir .. "/*." .. M.config.extension,
-    M.config.notes_dir .. "/**/*." .. M.config.extension,
+    escaped_dir .. "/*." .. M.config.extension,
   }
 
   -- When entering a note buffer, map <CR> to follow WikiLinks
@@ -104,14 +142,38 @@ function M.register_autocmds()
     end,
   })
 
-  -- Auto-save notes on change
+  -- Auto-save notes on change, debounced so rapid typing doesn't rewrite the
+  -- whole buffer on every keystroke. Leaving insert mode flushes immediately.
+  local save_timers = {}
   vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
     group = group,
     pattern = note_patterns,
-    callback = function()
-      if vim.bo.modified and vim.bo.buftype == "" then
-        vim.cmd("silent! write")
+    callback = function(args)
+      if not (vim.bo[args.buf].modified and vim.bo[args.buf].buftype == "") then
+        return
       end
+
+      local timer = save_timers[args.buf]
+      if timer then
+        timer:stop()
+        save_timers[args.buf] = nil
+      end
+
+      if args.event == "InsertLeave" then
+        vim.cmd("silent! write")
+        return
+      end
+
+      save_timers[args.buf] = vim.defer_fn(function()
+        save_timers[args.buf] = nil
+        if vim.api.nvim_buf_is_valid(args.buf)
+          and vim.bo[args.buf].modified
+          and vim.bo[args.buf].buftype == "" then
+          vim.api.nvim_buf_call(args.buf, function()
+            vim.cmd("silent! write")
+          end)
+        end
+      end, SAVE_DELAY)
     end,
   })
 

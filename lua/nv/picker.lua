@@ -47,25 +47,11 @@ local function open_or_create(picker, item)
 
     if item and item.file then
       -- 1. Open existing note
-      vim.cmd("edit " .. item.file)
+      nv.open_note(item.file)
     elseif current_line and current_line ~= "" then
       -- 2. Create new note with the prompt text
       local filename = clean_filename(current_line)
-      local filepath = nv.config.notes_dir .. "/" .. filename
-      
-      -- Ensure the parent directory exists
-      local dir = vim.fn.fnamemodify(filepath, ":h")
-      if vim.fn.isdirectory(dir) == 0 then
-        vim.fn.mkdir(dir, "p")
-      end
-      
-      -- Edit the file
-      vim.cmd("edit " .. vim.fn.fnameescape(filepath))
-      
-      -- Insert the prompt text as the H1 title in the new note
-      local title = "# " .. current_line
-      vim.api.nvim_buf_set_lines(0, 0, -1, false, { title, "", "" })
-      vim.cmd("write")
+      nv.open_note(nv.config.notes_dir .. "/" .. filename, current_line)
     else
       print("nv.nvim: No search query or selection provided.")
     end
