@@ -44,7 +44,10 @@ function M.throws(fn, pattern, message)
     error(message or "expected function to throw", 2)
   end
   if pattern and not tostring(err):find(pattern) then
-    error((message or "exception mismatch") .. "\n  expected pattern: " .. pattern .. "\n  actual: " .. tostring(err), 2)
+    error(
+      (message or "exception mismatch") .. "\n  expected pattern: " .. pattern .. "\n  actual: " .. tostring(err),
+      2
+    )
   end
 end
 

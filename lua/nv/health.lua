@@ -14,7 +14,14 @@ function M.check()
   local ok_version, why = pcall(vim.version.ge, nvim, MIN_VERSION)
   if ok_version and why then
     health.ok(
-      ("Neovim %d.%d.%d (>= %d.%d.%d required)"):format(nvim.major, nvim.minor, nvim.patch, MIN_VERSION[1], MIN_VERSION[2], MIN_VERSION[3])
+      ("Neovim %d.%d.%d (>= %d.%d.%d required)"):format(
+        nvim.major,
+        nvim.minor,
+        nvim.patch,
+        MIN_VERSION[1],
+        MIN_VERSION[2],
+        MIN_VERSION[3]
+      )
     )
   else
     health.error(("Neovim is too old (>= %d.%d.%d required)"):format(MIN_VERSION[1], MIN_VERSION[2], MIN_VERSION[3]))
@@ -25,10 +32,7 @@ function M.check()
   if has_snacks then
     health.ok("snacks.nvim loaded")
   else
-    health.error(
-      "snacks.nvim is not installed",
-      "Install folke/snacks.nvim (e.g. via vim.pack.add() or lazy.nvim)"
-    )
+    health.error("snacks.nvim is not installed", "Install folke/snacks.nvim (e.g. via vim.pack.add() or lazy.nvim)")
   end
 
   -- Notes directory

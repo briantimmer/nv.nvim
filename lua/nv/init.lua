@@ -4,17 +4,17 @@ local M = {}
 -- Default options
 M.config = {
   notes_dir = vim.fn.expand("~/notes"), -- Default directory for notes
-  extension = "md",                     -- Default file extension (.md)
-  auto_open_on_dir = true,              -- Auto-open NV if directory is opened
-  auto_save = true,                     -- Auto-save notes on change
-  auto_save_delay = 300,                -- Auto-save debounce (ms)
-  wikilink_mapping = true,              -- Map <CR> to follow WikiLinks in notes
+  extension = "md", -- Default file extension (.md)
+  auto_open_on_dir = true, -- Auto-open NV if directory is opened
+  auto_save = true, -- Auto-save notes on change
+  auto_save_delay = 300, -- Auto-save debounce (ms)
+  wikilink_mapping = true, -- Map <CR> to follow WikiLinks in notes
 }
 
 -- Setup function to override defaults
 function M.setup(user_opts)
   M.config = vim.tbl_deep_extend("force", M.config, user_opts or {})
-  
+
   -- Create the notes directory if it doesn't exist
   if vim.fn.isdirectory(M.config.notes_dir) == 0 then
     vim.fn.mkdir(M.config.notes_dir, "p")
@@ -28,11 +28,12 @@ end
 function M.clean_filename(prompt)
   -- Strip ASCII punctuation that is unsafe in filenames, but preserve bytes
   -- >= 0x80 so Unicode letters and symbols survive (Lua's %w is ASCII-only).
-  local clean = (prompt or ""):gsub("[^%w%s%-/_%.\128-\255]", "")
-    :gsub("%s+", "-")          -- whitespace runs -> dash
-    :gsub("%-+", "-")          -- collapse dash runs
-    :gsub("^[%-.]+", "")       -- strip leading dashes/dots
-    :gsub("[%-.%/]+$", "")     -- strip trailing dashes/dots/slashes
+  local clean = (prompt or "")
+    :gsub("[^%w%s%-/_%.\128-\255]", "")
+    :gsub("%s+", "-") -- whitespace runs -> dash
+    :gsub("%-+", "-") -- collapse dash runs
+    :gsub("^[%-.]+", "") -- strip leading dashes/dots
+    :gsub("[%-.%/]+$", "") -- strip trailing dashes/dots/slashes
     :lower()
 
   -- Drop empty, "." and ".." path segments so note titles cannot traverse out
@@ -206,7 +207,9 @@ function M.register_autocmds()
       group = group,
       callback = function(args)
         local bufname = vim.api.nvim_buf_get_name(args.buf)
-        if bufname == "" then return end
+        if bufname == "" then
+          return
+        end
 
         local path = M._normalize_path(bufname)
         local notes_path = M._normalize_path(M.config.notes_dir)
