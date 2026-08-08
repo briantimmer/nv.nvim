@@ -8,22 +8,27 @@ local function clean_filename(prompt)
   return nv.clean_filename(prompt)
 end
 
+-- A window is a candidate for the main editor if it is non-floating and
+-- not a sidebar (Neo-tree, NvimTree, oil, netrw) or a non-normal buffer.
+local function is_editor_window(win)
+  local config = vim.api.nvim_win_get_config(win)
+  if config.relative ~= "" then
+    return false
+  end
+  local buf = vim.api.nvim_win_get_buf(win)
+  local buftype = vim.bo[buf].buftype
+  local filetype = vim.bo[buf].filetype
+  return buftype == ""
+    and filetype ~= "neo-tree"
+    and filetype ~= "NvimTree"
+    and filetype ~= "oil"
+    and filetype ~= "netrw"
+end
+
 -- Find the first valid non-floating, non-sidebar window
 local function get_main_window()
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    local config = vim.api.nvim_win_get_config(win)
-    if config.relative == "" then
-      local buf = vim.api.nvim_win_get_buf(win)
-      local buftype = vim.bo[buf].buftype
-      local filetype = vim.bo[buf].filetype
-      if buftype == "" and filetype ~= "neo-tree" and filetype ~= "NvimTree" and filetype ~= "oil" and filetype ~= "netrw" then
-        return win
-      end
-    end
-  end
-  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    local config = vim.api.nvim_win_get_config(win)
-    if config.relative == "" then
+    if is_editor_window(win) then
       return win
     end
   end
