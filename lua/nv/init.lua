@@ -6,6 +6,9 @@ M.config = {
   notes_dir = vim.fn.expand("~/notes"), -- Default directory for notes
   extension = "md",                     -- Default file extension (.md)
   auto_open_on_dir = true,              -- Auto-open NV if directory is opened
+  auto_save = true,                     -- Auto-save notes on change
+  auto_save_delay = 300,                -- Auto-save debounce (ms)
+  wikilink_mapping = true,              -- Map <CR> to follow WikiLinks in notes
 }
 
 -- Setup function to override defaults
@@ -115,12 +118,10 @@ function M.follow_link()
   return "<CR>"
 end
 
-local SAVE_DELAY = 300
-
 -- Resolve a path to its canonical form so directory comparisons survive
 -- symlinks and case differences on case-insensitive filesystems (e.g. APFS).
 -- Falls back to the absolute path if the OS cannot resolve it.
-local function normalize_path(path)
+function M._normalize_path(path)
   local real = vim.uv.fs_realpath(path)
   if real then
     return real
@@ -130,6 +131,11 @@ local function normalize_path(path)
     expanded = expanded:sub(1, -2)
   end
   return expanded
+end
+
+-- True when the buffer is a modified, normal-type note buffer.
+local function is_saveable_note(buf)
+  return vim.bo[buf].modified and vim.bo[buf].buftype == ""
 end
 
 function M.register_autocmds()
@@ -145,52 +151,54 @@ function M.register_autocmds()
   }
 
   -- When entering a note buffer, map <CR> to follow WikiLinks
-  vim.api.nvim_create_autocmd("BufEnter", {
-    group = group,
-    pattern = note_patterns,
-    callback = function()
-      vim.keymap.set("n", "<CR>", M.follow_link, {
-        buffer = true,
-        expr = true,
-        desc = "Follow WikiLink under cursor",
-      })
-    end,
-  })
+  if M.config.wikilink_mapping then
+    vim.api.nvim_create_autocmd("BufEnter", {
+      group = group,
+      pattern = note_patterns,
+      callback = function()
+        vim.keymap.set("n", "<CR>", M.follow_link, {
+          buffer = true,
+          expr = true,
+          desc = "Follow WikiLink under cursor",
+        })
+      end,
+    })
+  end
 
   -- Auto-save notes on change, debounced so rapid typing doesn't rewrite the
   -- whole buffer on every keystroke. Leaving insert mode flushes immediately.
-  local save_timers = {}
-  vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
-    group = group,
-    pattern = note_patterns,
-    callback = function(args)
-      if not (vim.bo[args.buf].modified and vim.bo[args.buf].buftype == "") then
-        return
-      end
-
-      local timer = save_timers[args.buf]
-      if timer then
-        timer:stop()
-        save_timers[args.buf] = nil
-      end
-
-      if args.event == "InsertLeave" then
-        vim.cmd("silent! write")
-        return
-      end
-
-      save_timers[args.buf] = vim.defer_fn(function()
-        save_timers[args.buf] = nil
-        if vim.api.nvim_buf_is_valid(args.buf)
-          and vim.bo[args.buf].modified
-          and vim.bo[args.buf].buftype == "" then
-          vim.api.nvim_buf_call(args.buf, function()
-            vim.cmd("silent! write")
-          end)
+  if M.config.auto_save then
+    local save_timers = {}
+    vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
+      group = group,
+      pattern = note_patterns,
+      callback = function(args)
+        if not is_saveable_note(args.buf) then
+          return
         end
-      end, SAVE_DELAY)
-    end,
-  })
+
+        local timer = save_timers[args.buf]
+        if timer then
+          timer:stop()
+          save_timers[args.buf] = nil
+        end
+
+        if args.event == "InsertLeave" then
+          vim.cmd("silent! write")
+          return
+        end
+
+        save_timers[args.buf] = vim.defer_fn(function()
+          save_timers[args.buf] = nil
+          if vim.api.nvim_buf_is_valid(args.buf) and is_saveable_note(args.buf) then
+            vim.api.nvim_buf_call(args.buf, function()
+              vim.cmd("silent! write")
+            end)
+          end
+        end, M.config.auto_save_delay)
+      end,
+    })
+  end
 
   -- Auto-open NV if notes directory is opened
   if M.config.auto_open_on_dir then
@@ -200,8 +208,8 @@ function M.register_autocmds()
         local bufname = vim.api.nvim_buf_get_name(args.buf)
         if bufname == "" then return end
 
-        local path = normalize_path(bufname)
-        local notes_path = normalize_path(M.config.notes_dir)
+        local path = M._normalize_path(bufname)
+        local notes_path = M._normalize_path(M.config.notes_dir)
 
         if path == notes_path then
           -- Defer by 50ms to allow lazy-loaded Neo-tree and directory explorer to finish rendering first
