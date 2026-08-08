@@ -117,6 +117,21 @@ end
 
 local SAVE_DELAY = 300
 
+-- Resolve a path to its canonical form so directory comparisons survive
+-- symlinks and case differences on case-insensitive filesystems (e.g. APFS).
+-- Falls back to the absolute path if the OS cannot resolve it.
+local function normalize_path(path)
+  local real = vim.uv.fs_realpath(path)
+  if real then
+    return real
+  end
+  local expanded = vim.fn.fnamemodify(path, ":p")
+  if expanded:sub(-1) == "/" or expanded:sub(-1) == "\\" then
+    expanded = expanded:sub(1, -2)
+  end
+  return expanded
+end
+
 function M.register_autocmds()
   local group = vim.api.nvim_create_augroup("nv_autocmds", { clear = true })
 
@@ -185,16 +200,8 @@ function M.register_autocmds()
         local bufname = vim.api.nvim_buf_get_name(args.buf)
         if bufname == "" then return end
 
-        local path = vim.fn.fnamemodify(bufname, ":p")
-        -- Normalize trailing slashes
-        if path:sub(-1) == "/" or path:sub(-1) == "\\" then
-          path = path:sub(1, -2)
-        end
-
-        local notes_path = vim.fn.fnamemodify(M.config.notes_dir, ":p")
-        if notes_path:sub(-1) == "/" or notes_path:sub(-1) == "\\" then
-          notes_path = notes_path:sub(1, -2)
-        end
+        local path = normalize_path(bufname)
+        local notes_path = normalize_path(M.config.notes_dir)
 
         if path == notes_path then
           -- Defer by 50ms to allow lazy-loaded Neo-tree and directory explorer to finish rendering first
