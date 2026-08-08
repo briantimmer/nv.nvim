@@ -80,3 +80,7 @@ vim.keymap.set("n", "<leader>n", "<cmd>NV<CR>", { desc = "Notational Velocity No
 - Browse options from `:help nv`.
 - Diagnose your setup with `:checkhealth nv`.
 - Run the headless test suite with `make test` (or directly: `nvim --headless -u tests/minimal_init.lua -l tests/run.lua`).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). To report a security issue, follow the process in [SECURITY.md](SECURITY.md).
