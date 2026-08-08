@@ -8,6 +8,21 @@ local function clean_filename(prompt)
   return nv.clean_filename(prompt)
 end
 
+-- Resolve the picker associated with the given snacks.win (input window),
+-- instead of relying on picker stack order.
+local function picker_from_win(win)
+  local win_handle = win and win.win
+  if not win_handle then
+    return nil
+  end
+  for _, picker in ipairs(require("snacks").picker.get()) do
+    if picker.input and picker.input.win and picker.input.win.win == win_handle then
+      return picker
+    end
+  end
+  return nil
+end
+
 -- A window is a candidate for the main editor if it is non-floating and
 -- not a sidebar (Neo-tree, NvimTree, oil, netrw) or a non-normal buffer.
 local function is_editor_window(win)
@@ -81,7 +96,7 @@ function M.search_notes()
           -- Ctrl-y to force-create a new note with prompt, even if matches exist
           ["<C-y>"] = {
             function(win)
-              local active_picker = snacks.picker.get()[1]
+              local active_picker = picker_from_win(win)
               if active_picker then
                 open_or_create(active_picker, nil) -- passing nil for item forces creation
               end
