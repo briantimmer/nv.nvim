@@ -36,7 +36,7 @@ Using Neovim 0.12's built-in package manager (`vim.pack.add()`): >
 
   vim.pack.add({
     "https://github.com/folke/snacks.nvim",
-    "file://" .. vim.fn.expand("~/nv.nvim"),
+    "https://github.com/briantimmer/nv.nvim",
   })
 <
 
