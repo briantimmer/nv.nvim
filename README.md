@@ -10,6 +10,8 @@ Built on top of **snacks.nvim**.
 - **Force-create:** Press `Ctrl-y` in the search box to force-create a new note with your query even if other search results exist.
 - **Auto-heading insertion:** Automatically populates the new note with a neat Markdown H1 title.
 - **Auto-open on folder open:** Automatically intercepts Neovim starts targeting your notes folder and launches the search interface immediately.
+- **WikiLinks:** `<CR>` follows `[[WikiLink]]` targets inside notes, creating them if they don't exist.
+- **Auto-save:** notes are written to disk automatically after a debounce delay.
 
 ## Requirements
 
@@ -31,9 +33,12 @@ vim.pack.add({
 
 -- 2. Configure nv.nvim
 require("nv").setup({
-  notes_dir = vim.fn.expand("~/notes"), -- Custom notes directory
-  extension = "md",                     -- Custom extension
-  auto_open_on_dir = true,              -- Auto-open search picker when notes directory is opened
+  notes_dir         = vim.fn.expand("~/notes"), -- Directory for notes
+  extension         = "md",                     -- Note file extension
+  auto_open_on_dir  = true,                     -- Open picker when notes dir is opened
+  auto_save         = true,                     -- Auto-save notes on change
+  auto_save_delay   = 300,                      -- Auto-save debounce in ms
+  wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
 })
 
 -- 3. Bind a key to trigger the search
@@ -47,3 +52,9 @@ vim.keymap.set("n", "<leader>n", "<cmd>NV<CR>", { desc = "Notational Velocity No
 3. If the note exists, highlight it and press `<CR>` (Enter).
 4. If it doesn't exist, press `<CR>` to create and open it.
 5. To force create a new note with your search query (even if there are matching search options), press `<C-y>` (Ctrl-y).
+
+## Help, health, and tests
+
+- Browse options from `:help nv`.
+- Diagnose your setup with `:checkhealth nv`.
+- Run the headless test suite with `make test` (or directly: `nvim --headless -u tests/minimal_init.lua -l tests/run.lua`).

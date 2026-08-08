@@ -1,0 +1,132 @@
+*nv.txt*                        nv.nvim - Notational Velocity for Neovim
+
+==============================================================================
+INTRODUCTION                                          *nv-introduction*
+
+nv.nvim is a lightweight Neovim plugin that replicates the fast
+"search-or-create" note-taking workflow of Notational Velocity, built on top
+of snacks.nvim.
+
+==============================================================================
+FEATURES                                                *nv-features*
+
+- Fast search-or-create: Launch notes search. If a matching note exists, hit
+  <Enter> to open it. If it doesn't exist, hit <Enter> to instantly create
+  and open a new note named after your search query.
+- Force-create: Press <C-y> in the search box to force-create a new note with
+  your query even if other search results exist.
+- Auto-heading insertion: Automatically populates the new note with a neat
+  Markdown H1 title.
+- Auto-open on folder open: Automatically intercepts Neovim starts targeting
+  your notes folder and launches the search interface immediately.
+- WikiLinks: <CR> follows [[WikiLink]] targets inside notes, creating them if
+  they don't exist.
+- Auto-save: notes are written to disk automatically after a debounce delay.
+
+==============================================================================
+REQUIREMENTS                                            *nv-requirements*
+
+- Neovim >= 0.10
+- folke/snacks.nvim (for the picker)
+
+==============================================================================
+INSTALLATION                                            *nv-installation*
+
+Using Neovim 0.12's built-in package manager (`vim.pack.add()`): >
+
+  vim.pack.add({
+    "https://github.com/folke/snacks.nvim",
+    "file://" .. vim.fn.expand("~/nv.nvim"),
+  })
+<
+
+==============================================================================
+CONFIGURATION                                           *nv-configuration*
+
+nv.nvim comes with the following defaults: >
+
+  require("nv").setup({
+    notes_dir         = vim.fn.expand("~/notes"), -- Directory for notes
+    extension         = "md",                     -- Note file extension
+    auto_open_on_dir  = true,                     -- Open picker when notes dir is opened
+    auto_save         = true,                     -- Auto-save notes on change
+    auto_save_delay   = 300,                      -- Auto-save debounce in ms
+    wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
+  })
+<
+
+notes_dir                                                 *nv-config-notes_dir*
+  Path to your notes directory. It is created on setup() if it doesn't exist.
+
+extension                                                 *nv-config-extension*
+  File extension used for new notes (without the leading dot).
+
+auto_open_on_dir                                          *nv-config-auto_open_on_dir*
+  When true, opening the notes directory in Neovim launches the search picker
+  automatically. Path comparison is case-insensitive where the filesystem is.
+
+auto_save                                                 *nv-config-auto_save*
+  When true, notes are written to disk automatically. Disable to keep manual
+  control over saving.
+
+auto_save_delay                                           *nv-config-auto_save_delay*
+  Debounce delay (in ms) before a note is written after you stop typing.
+  Leaving insert mode always flushes immediately.
+
+wikilink_mapping                                          *nv-config-wikilink_mapping*
+  When true, <CR> inside a note buffer follows the [[WikiLink]] under the
+  cursor. Set to false to disable the mapping.
+
+==============================================================================
+USAGE                                                      *nv-usage*
+
+1. Press your keymap (e.g. <leader>n) or type `:NV` to launch search.
+2. Start typing to search by title.
+3. If the note exists, highlight it and press <CR> (Enter).
+4. If it doesn't exist, press <CR> to create and open it.
+5. To force-create a new note with your search query (even if there are
+   matching search options), press <C-y> (Ctrl-y).
+
+==============================================================================
+COMMANDS                                                  *nv-commands*
+
+:NV                                                          *nv-command-NV*
+  Launch the notes search-and-create picker.
+
+==============================================================================
+FUNCTIONS                                                 *nv-functions*
+
+nv.clean_filename(text)                              *nv.clean_filename()*
+  Turn prompt text into a clean note filename (safe characters, collapsed
+  whitespace, path traversal stripped, extension appended).
+
+nv.open_note(path[, title])                            *nv.open_note()*
+  Open an existing note, or create it (with an H1 title) if it doesn't exist.
+
+nv.follow_link()                                      *nv.follow_link()*
+  Navigate to the [[WikiLink]] under the cursor. Used by the <CR> mapping.
+
+==============================================================================
+DIAGNOSTICS                                               *nv-diagnostics*
+
+Run `:checkhealth nv` to verify your Neovim version, that snacks.nvim is
+installed, and that your notes directory exists and is writable.
+
+==============================================================================
+TESTS                                                      *nv-tests*
+
+Run the headless test suite from the repo root: >
+
+  make test
+<
+or directly: >
+
+  nvim --headless -u tests/minimal_init.lua -l tests/run.lua
+<
+
+==============================================================================
+CONTRIBUTING                                               *nv-contributing*
+
+Report issues at https://github.com/briantimmer/nv.nvim/issues
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
