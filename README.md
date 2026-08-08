@@ -47,10 +47,10 @@ Add this to your plugin spec:
 Add this entry to your Neovim initialization configuration (e.g. `init.lua`):
 
 ```lua
--- 1. Load snacks.nvim and your local nv.nvim plugin
+-- 1. Load snacks.nvim and nv.nvim
 vim.pack.add({
   "https://github.com/folke/snacks.nvim",
-  "file://" .. vim.fn.expand("~/nv.nvim")
+  "https://github.com/briantimmer/nv.nvim",
 })
 
 -- 2. Configure nv.nvim
