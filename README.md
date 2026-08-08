@@ -20,6 +20,28 @@ Built on top of **snacks.nvim**.
 
 ## Installation
 
+### Using lazy.nvim
+
+Add this to your plugin spec:
+
+```lua
+{
+  "briantimmer/nv.nvim",
+  dependencies = { "folke/snacks.nvim" },
+  event = "VeryLazy", -- or a keymap like keys = { { "<leader>n", "<cmd>NV<CR>", desc = "Notes" } }
+  config = function()
+    require("nv").setup({
+      notes_dir         = vim.fn.expand("~/notes"), -- Directory for notes
+      extension         = "md",                     -- Note file extension
+      auto_open_on_dir  = true,                     -- Open picker when notes dir is opened
+      auto_save         = true,                     -- Auto-save notes on change
+      auto_save_delay   = 300,                      -- Auto-save debounce in ms
+      wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
+    })
+  end,
+}
+```
+
 ### Using Neovim 0.12's Built-in Package Manager (`vim.pack.add()`)
 
 Add this entry to your Neovim initialization configuration (e.g. `init.lua`):
