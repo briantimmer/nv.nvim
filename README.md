@@ -37,10 +37,10 @@ Add this to your plugin spec:
       auto_save         = true,                     -- Auto-save notes on change
       auto_save_delay   = 300,                      -- Auto-save debounce in ms
       wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
+      picker_layout     = "default",                -- "vertical" stacks input/list/preview like classic NV
     })
   end,
 }
-```
 
 ### Using Neovim 0.12's Built-in Package Manager (`vim.pack.add()`)
 
@@ -61,6 +61,7 @@ require("nv").setup({
   auto_save         = true,                     -- Auto-save notes on change
   auto_save_delay   = 300,                      -- Auto-save debounce in ms
   wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
+  picker_layout     = "default",                -- "vertical" stacks input/list/preview like classic NV
 })
 
 -- 3. Bind a key to trigger the search

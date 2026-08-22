@@ -52,6 +52,7 @@ nv.nvim comes with the following defaults: >
     auto_save         = true,                     -- Auto-save notes on change
     auto_save_delay   = 300,                      -- Auto-save debounce in ms
     wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
+    picker_layout     = "default",                -- Picker layout ("default" or "vertical")
   })
 <
 
@@ -76,6 +77,13 @@ auto_save_delay                                           *nv-config-auto_save_d
 wikilink_mapping                                          *nv-config-wikilink_mapping*
   When true, <CR> inside a note buffer follows the [[WikiLink]] under the
   cursor. Set to false to disable the mapping.
+
+picker_layout                                            *nv-config-picker_layout*
+  Layout of the search window. "default" places the list and preview side by
+  side; "vertical" stacks input, list and preview top-down like the original
+  Notational Velocity (input on top, note titles below, preview pinned to the
+  bottom). Any other snacks.picker layout name or a full layout config table
+  is also accepted; see |snacks.nvim-picker-layouts|.
 
 ==============================================================================
 USAGE                                                      *nv-usage*
