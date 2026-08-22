@@ -74,6 +74,14 @@ function M.check()
   else
     health.info("wikilink_mapping: disabled")
   end
+
+  -- Picker layout
+  local layout = nv.config.picker_layout
+  if type(layout) == "string" then
+    health.info(("picker layout: %s"):format(layout))
+  else
+    health.info("picker layout: custom")
+  end
 end
 
 return M

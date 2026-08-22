@@ -135,6 +135,26 @@ describe("config toggles", function()
   end)
 end)
 
+describe("picker_layout", function()
+  it("defaults to the snacks 'default' layout", function()
+    helper.reload_with_config({ picker_layout = "default" })
+    eq("default", nv.config.picker_layout)
+  end)
+
+  it("accepts a layout preset name override", function()
+    helper.reload_with_config({ picker_layout = "vertical" })
+    eq("vertical", nv.config.picker_layout)
+  end)
+
+  it("accepts a full layout config table", function()
+    local custom = { layout = { box = "vertical" } }
+    helper.reload_with_config({ picker_layout = custom })
+    eq(custom, nv.config.picker_layout)
+  end)
+
+  helper.reload_with_config({ picker_layout = "default" })
+end)
+
 describe("path normalization", function()
   it("canonicalizes differently-cased paths on case-insensitive filesystems", function()
     if not helper.case_insensitive_fs() then

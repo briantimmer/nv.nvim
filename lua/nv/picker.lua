@@ -89,6 +89,7 @@ function M.search_notes()
   snacks.picker.files({
     cwd = nv.config.notes_dir,
     title = "Notational Velocity Notes",
+    layout = nv.config.picker_layout,
     confirm = open_or_create, -- Use open_or_create as the confirm action
     win = {
       input = {

@@ -9,6 +9,7 @@ M.config = {
   auto_save = true, -- Auto-save notes on change
   auto_save_delay = 300, -- Auto-save debounce (ms)
   wikilink_mapping = true, -- Map <CR> to follow WikiLinks in notes
+  picker_layout = "default", -- snacks.picker layout: "default", "vertical", or a custom config
 }
 
 -- Setup function to override defaults
