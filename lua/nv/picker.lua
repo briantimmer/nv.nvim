@@ -78,6 +78,15 @@ local function open_or_create(picker, item)
   end)
 end
 
+-- Resolve layout config: if it's a string reference, resolve it from layouts
+local function resolve_layout(layout_config)
+  if type(layout_config) == "string" then
+    local layouts = require("nv.layouts")
+    return layouts[layout_config] or layout_config
+  end
+  return layout_config
+end
+
 -- Main picker function using snacks.nvim
 function M.search_notes()
   -- Ensure snacks is loaded
@@ -86,10 +95,12 @@ function M.search_notes()
     error("nv.nvim: snacks.nvim is required for this plugin to work.")
   end
 
+  local layout = resolve_layout(nv.config.picker_layout)
+
   snacks.picker.files({
     cwd = nv.config.notes_dir,
     title = "Notational Velocity Notes",
-    layout = nv.config.picker_layout,
+    layout = layout,
     confirm = open_or_create, -- Use open_or_create as the confirm action
     win = {
       input = {

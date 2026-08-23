@@ -1,6 +1,9 @@
 -- lua/nv/init.lua
 local M = {}
 
+-- Expose layouts module for user reference
+M.layouts = require("nv.layouts")
+
 -- Default options
 M.config = {
   notes_dir = vim.fn.expand("~/notes"), -- Default directory for notes
@@ -9,7 +12,7 @@ M.config = {
   auto_save = true, -- Auto-save notes on change
   auto_save_delay = 300, -- Auto-save debounce (ms)
   wikilink_mapping = true, -- Map <CR> to follow WikiLinks in notes
-  picker_layout = "default", -- snacks.picker layout: "default", "vertical", or a custom config
+  picker_layout = "default", -- snacks.picker layout name or custom config table
 }
 
 -- Setup function to override defaults
