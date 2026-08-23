@@ -77,7 +77,16 @@ function M.check()
 
   -- Picker layout
   local layout = nv.config.picker_layout
-  if type(layout) == "string" then
+  local layouts = require("nv.layouts")
+  if type(layout) == "string" and has_snacks and not layouts.is_valid(layout) then
+    health.warn(
+      ("unknown picker_layout: %s (predefined layouts: %s)"):format(
+        layout,
+        table.concat(layouts.predefined_names(), ", ")
+      ),
+      "Any snacks.picker preset name or layout table is also valid; fix picker_layout in require('nv').setup()"
+    )
+  elseif type(layout) == "string" then
     health.info(("picker layout: %s"):format(layout))
   else
     health.info("picker layout: custom")

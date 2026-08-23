@@ -57,6 +57,57 @@ M.vertical_wide = {
   },
 }
 
+-- Sorted names of the layouts predefined in this module (the table entries)
+function M.predefined_names()
+  local names = {}
+  for name, value in pairs(M) do
+    if type(value) == "table" then
+      names[#names + 1] = name
+    end
+  end
+  table.sort(names)
+  return names
+end
+
+-- True when value is usable as a picker layout: a predefined layout, a
+-- snacks.picker preset name (built-in or user-registered), or a layout
+-- table/function as accepted by snacks.picker. When snacks.nvim cannot be
+-- consulted (not installed yet), string values are assumed valid so that
+-- validation itself never blocks usage.
+function M.is_valid(value)
+  local kind = type(value)
+  if kind == "table" or kind == "function" then
+    return true
+  elseif kind ~= "string" then
+    return false
+  elseif M[value] ~= nil then
+    return true
+  end
+
+  -- Not predefined: defer to snacks for its built-in and registered presets.
+  local consultable = false
+  local ok_presets, presets = pcall(require, "snacks.picker.config.layouts")
+  if ok_presets then
+    consultable = true
+    if presets[value] ~= nil then
+      return true
+    end
+  end
+
+  local ok_config, config = pcall(require, "snacks.picker.config")
+  if ok_config and type(config.get) == "function" then
+    local ok_get, merged = pcall(config.get)
+    if ok_get and type(merged) == "table" then
+      consultable = true
+      if merged.layouts and merged.layouts[value] ~= nil then
+        return true
+      end
+    end
+  end
+
+  return not consultable
+end
+
 -- Default snacks layouts (pass through)
 M.default = "default"
 M.vertical = "vertical"

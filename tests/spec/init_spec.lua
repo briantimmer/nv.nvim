@@ -152,6 +152,30 @@ describe("picker_layout", function()
     eq(custom, nv.config.picker_layout)
   end)
 
+  it("lists the predefined layout names", function()
+    eq({ "vertical_balanced", "vertical_compact", "vertical_wide" }, require("nv.layouts").predefined_names())
+  end)
+
+  it("treats predefined names, tables and functions as valid layouts", function()
+    local layouts = require("nv.layouts")
+    ok(layouts.is_valid("vertical_compact"))
+    ok(layouts.is_valid(layouts.vertical_wide))
+    ok(layouts.is_valid(function()
+      return "default"
+    end))
+    eq(false, layouts.is_valid(42))
+  end)
+
+  it("rejects unknown preset names when snacks can be consulted", function()
+    if not pcall(require, "snacks") then
+      return -- without snacks installed, string names are assumed valid
+    end
+    local layouts = require("nv.layouts")
+    eq(false, layouts.is_valid("verticle"))
+    ok(layouts.is_valid("ivy"))
+    ok(not layouts.is_valid("no-such-preset"))
+  end)
+
   helper.reload_with_config({ picker_layout = "default" })
 end)
 

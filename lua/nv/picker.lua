@@ -95,12 +95,25 @@ function M.search_notes()
     error("nv.nvim: snacks.nvim is required for this plugin to work.")
   end
 
-  local layout = resolve_layout(nv.config.picker_layout)
+  -- Validate the configured layout up front so a bad value warns and falls
+  -- back instead of failing deep inside snacks.picker when windows are built.
+  local layouts = require("nv.layouts")
+  local layout_option = nv.config.picker_layout
+  if not layouts.is_valid(layout_option) then
+    vim.notify(
+      ("nv.nvim: unknown picker_layout '%s', falling back to 'default' (predefined layouts: %s)"):format(
+        tostring(layout_option),
+        table.concat(layouts.predefined_names(), ", ")
+      ),
+      vim.log.levels.WARN
+    )
+    layout_option = "default"
+  end
 
   snacks.picker.files({
     cwd = nv.config.notes_dir,
     title = "Notational Velocity Notes",
-    layout = layout,
+    layout = resolve_layout(layout_option),
     confirm = open_or_create, -- Use open_or_create as the confirm action
     win = {
       input = {
