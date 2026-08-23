@@ -37,7 +37,7 @@ Add this to your plugin spec:
       auto_save         = true,                     -- Auto-save notes on change
       auto_save_delay   = 300,                      -- Auto-save debounce in ms
       wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
-      picker_layout     = "vertical",               -- Layout: see Picker Layouts below
+      picker_layout     = "default",                -- Layout: see Picker Layouts below
     })
   end,
 }
@@ -80,7 +80,7 @@ Customize how the search modal is laid out. Built-in options:
 - **`nv.layouts.vertical_wide`** — Larger modal (80% width) with short list and tall preview
 - **`"default"`** — List and preview side-by-side (snacks.nvim default)
 - **`"vertical"`** — Stack input/list/preview vertically (snacks.nvim standard)
-- Any other snacks.nvim layout name or a custom table
+- Any other snacks.nvim layout name or a custom table (unknown names warn and fall back to `"default"`)
 
 Example:
 

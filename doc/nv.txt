@@ -52,7 +52,7 @@ nv.nvim comes with the following defaults: >
     auto_save         = true,                     -- Auto-save notes on change
     auto_save_delay   = 300,                      -- Auto-save debounce in ms
     wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
-    picker_layout     = "vertical",               -- Layout: see Picker Layouts below
+    picker_layout     = "default",                -- Layout: see Picker Layouts below
   })
 <
 
@@ -86,6 +86,9 @@ picker_layout                                            *nv-config-picker_layou
   - "default": List and preview side-by-side (snacks.nvim default)
   - "vertical": Stack input/list/preview vertically (snacks.nvim standard)
   - Any other snacks.picker layout name or a full custom layout table.
+
+  Unknown names are reported by :checkhealth, warn when the picker opens,
+  and fall back to the "default" layout.
 
   Example using a built-in layout: >
     nv.setup({ picker_layout = nv.layouts.vertical_compact })
