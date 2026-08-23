@@ -52,7 +52,7 @@ nv.nvim comes with the following defaults: >
     auto_save         = true,                     -- Auto-save notes on change
     auto_save_delay   = 300,                      -- Auto-save debounce in ms
     wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
-    picker_layout     = "default",                -- Picker layout ("default" or "vertical")
+    picker_layout     = "vertical",               -- Layout: see Picker Layouts below
   })
 <
 
@@ -79,11 +79,41 @@ wikilink_mapping                                          *nv-config-wikilink_ma
   cursor. Set to false to disable the mapping.
 
 picker_layout                                            *nv-config-picker_layout*
-  Layout of the search window. "default" places the list and preview side by
-  side; "vertical" stacks input, list and preview top-down like the original
-  Notational Velocity (input on top, note titles below, preview pinned to the
-  bottom). Any other snacks.picker layout name or a full layout config table
-  is also accepted; see |snacks.nvim-picker-layouts|.
+  Layout of the search window. Built-in layouts available via nv.layouts:
+  - vertical_compact: Input on top, short list (25%), tall preview (75%)
+  - vertical_balanced: Input on top, 50/50 split between list and preview
+  - vertical_wide: Larger modal (80%) with short list and tall preview
+  - "default": List and preview side-by-side (snacks.nvim default)
+  - "vertical": Stack input/list/preview vertically (snacks.nvim standard)
+  - Any other snacks.picker layout name or a full custom layout table.
+
+  Example using a built-in layout: >
+    nv.setup({ picker_layout = nv.layouts.vertical_compact })
+<
+
+==============================================================================
+PICKER LAYOUTS                                          *nv-picker-layouts*
+
+nv.nvim provides predefined layouts through the nv.layouts module:
+
+vertical_compact                                    *nv-layouts-vertical_compact*
+  Input on top (1 line), short list (25%), tall preview/editor (75%).
+  Great for writing and editing notes. >
+    require("nv").setup({ picker_layout = nv.layouts.vertical_compact })
+<
+
+vertical_balanced                                  *nv-layouts-vertical_balanced*
+  Input on top (1 line), equal 50/50 split between list and preview. >
+    require("nv").setup({ picker_layout = nv.layouts.vertical_balanced })
+<
+
+vertical_wide                                            *nv-layouts-vertical_wide*
+  Larger modal (80% screen width) with short list and tall preview. >
+    require("nv").setup({ picker_layout = nv.layouts.vertical_wide })
+<
+
+You can also pass snacks.nvim's built-in layout names ("default", "vertical",
+"sidebar", "telescope", etc.) or define a custom layout table directly.
 
 ==============================================================================
 USAGE                                                      *nv-usage*

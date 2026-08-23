@@ -37,7 +37,7 @@ Add this to your plugin spec:
       auto_save         = true,                     -- Auto-save notes on change
       auto_save_delay   = 300,                      -- Auto-save debounce in ms
       wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
-      picker_layout     = "default",                -- "vertical" stacks input/list/preview like classic NV
+      picker_layout     = "vertical",               -- Layout: see Picker Layouts below
     })
   end,
 }
@@ -53,19 +53,41 @@ vim.pack.add({
   "https://github.com/btdstudio/nv.nvim",
 })
 
--- 2. Configure nv.nvim
-require("nv").setup({
-  notes_dir         = vim.fn.expand("~/notes"), -- Directory for notes
-  extension         = "md",                     -- Note file extension
-  auto_open_on_dir  = true,                     -- Open picker when notes dir is opened
-  auto_save         = true,                     -- Auto-save notes on change
-  auto_save_delay   = 300,                      -- Auto-save debounce in ms
-  wikilink_mapping  = true,                     -- Map <CR> to follow WikiLinks
-  picker_layout     = "default",                -- "vertical" stacks input/list/preview like classic NV
+-- 2. Load the plugin and configure nv.nvim
+vim.cmd.packadd("nv.nvim")
+
+local nv = require("nv")
+nv.setup({
+  notes_dir         = vim.fn.expand("~/notes"),      -- Directory for notes
+  extension         = "md",                          -- Note file extension
+  auto_open_on_dir  = true,                          -- Open picker when notes dir is opened
+  auto_save         = true,                          -- Auto-save notes on change
+  auto_save_delay   = 300,                           -- Auto-save debounce in ms
+  wikilink_mapping  = true,                          -- Map <CR> to follow WikiLinks
+  picker_layout     = nv.layouts.vertical_compact,   -- See Picker Layouts below
 })
 
 -- 3. Bind a key to trigger the search
 vim.keymap.set("n", "<leader>n", "<cmd>NV<CR>", { desc = "Notational Velocity Notes" })
+```
+
+## Picker Layouts
+
+Customize how the search modal is laid out. Built-in options:
+
+- **`nv.layouts.vertical_compact`** — Input on top, short list (25%), tall preview/editor (75%) — great for editing notes
+- **`nv.layouts.vertical_balanced`** — Input on top, 50/50 split between list and preview
+- **`nv.layouts.vertical_wide`** — Larger modal (80% width) with short list and tall preview
+- **`"default"`** — List and preview side-by-side (snacks.nvim default)
+- **`"vertical"`** — Stack input/list/preview vertically (snacks.nvim standard)
+- Any other snacks.nvim layout name or a custom table
+
+Example:
+
+```lua
+nv.setup({
+  picker_layout = nv.layouts.vertical_compact,
+})
 ```
 
 ## Usage
