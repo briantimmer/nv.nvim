@@ -26,7 +26,7 @@ Add this to your plugin spec:
 
 ```lua
 {
-  "btdstudio/nv.nvim",
+  "briantimmer/nv.nvim",
   dependencies = { "folke/snacks.nvim" },
   event = "VeryLazy", -- or a keymap like keys = { { "<leader>n", "<cmd>NV<CR>", desc = "Notes" } }
   config = function()
@@ -50,7 +50,7 @@ Add this entry to your Neovim initialization configuration (e.g. `init.lua`):
 -- 1. Load snacks.nvim and nv.nvim
 vim.pack.add({
   "https://github.com/folke/snacks.nvim",
-  "https://github.com/btdstudio/nv.nvim",
+  "https://github.com/briantimmer/nv.nvim",
 })
 
 -- 2. Load the plugin and configure nv.nvim

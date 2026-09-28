@@ -5,10 +5,10 @@
 Please do **not** report security vulnerabilities through public GitHub
 issues, since those are visible to everyone before a fix is in place.
 
-Instead, report privately. This repository is maintained by `btdstudio`; the
-owner's public profile on GitHub (`https://github.com/btdstudio`) lists the
+Instead, report privately. This repository is maintained by `briantimmer`; the
+owner's public profile on GitHub (`https://github.com/briantimmer`) lists the
 contact email to use. You can also open a [private security advisory](
-https://github.com/btdstudio/nv.nvim/security/advisories/new), which keeps the
+https://github.com/briantimmer/nv.nvim/security/advisories/new), which keeps the
 discussion confidential.
 
 Please include:
