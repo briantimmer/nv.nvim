@@ -9,13 +9,13 @@ Built on top of **snacks.nvim**.
 - **Fast search-or-create:** Launch notes search. If a matching note exists, hit `Enter` to open it. If it doesn't exist, hit `Enter` to instantly create and open a new note named after your search query.
 - **Force-create:** Press `Ctrl-y` in the search box to force-create a new note with your query even if other search results exist.
 - **Auto-heading insertion:** Automatically populates the new note with a neat Markdown H1 title.
-- **Auto-open on folder open:** Automatically intercepts Neovim starts targeting your notes folder and launches the search interface immediately.
+- **Auto-open on folder open:** Automatically intercepts Neovim starting in your notes folder and launches the search interface immediately.
 - **WikiLinks:** `<CR>` follows `[[WikiLink]]` targets inside notes, creating them if they don't exist.
 - **Auto-save:** notes are written to disk automatically after a debounce delay.
 
 ## Requirements
 
-- Neovim >= 0.12 (if using `vim.pack.add()`)
+- Neovim >= 0.10 (>= 0.12 if using `vim.pack.add()`)
 - [folke/snacks.nvim](https://github.com/folke/snacks.nvim) (for the picker)
 
 ## Installation
@@ -41,6 +41,7 @@ Add this to your plugin spec:
     })
   end,
 }
+```
 
 ### Using Neovim 0.12's Built-in Package Manager (`vim.pack.add()`)
 

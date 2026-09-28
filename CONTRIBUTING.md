@@ -21,7 +21,7 @@ Before submitting, please make sure:
 
 You need:
 
-- Neovim >= 0.12
+- Neovim >= 0.10 (>= 0.12 to use `vim.pack.add()`)
 - [stylua](https://github.com/JohnnyMorganz/StyLua) >= 2.5.2
 - [folke/snacks.nvim](https://github.com/folke/snacks.nvim) (the only runtime
   dependency)
