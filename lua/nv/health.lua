@@ -37,26 +37,31 @@ function M.check()
 
   -- Notes directory
   local nv = require("nv")
-  local notes_dir = vim.fn.expand(nv.config.notes_dir)
-  if notes_dir == "" then
-    health.error("notes_dir is empty", "Set notes_dir in require('nv').setup({})")
-  elseif vim.fn.isdirectory(notes_dir) == 0 then
-    health.warn(
-      ("notes_dir does not exist: %s"):format(notes_dir),
-      "It will be created on setup(); use :NV to start writing notes."
-    )
+  local ok_nb, nb = pcall(nv.notebook)
+  if not ok_nb or not nb then
+    health.error("failed to load notebook", tostring(nb))
   else
-    local writable = vim.fn.filewritable(notes_dir)
-    if writable == 2 then
-      health.ok(("notes_dir exists and is writable: %s"):format(notes_dir))
+    local notes_dir = nb.root
+    if notes_dir == "" then
+      health.error("notes_dir is empty", "Set notes_dir in require('nv').setup({})")
+    elseif vim.fn.isdirectory(notes_dir) == 0 then
+      health.warn(
+        ("notes_dir does not exist: %s"):format(notes_dir),
+        "It will be created on setup(); use :NV to start writing notes."
+      )
     else
-      health.error(("notes_dir is not writable: %s"):format(notes_dir))
+      local writable = vim.fn.filewritable(notes_dir)
+      if writable == 2 then
+        health.ok(("notes_dir exists and is writable: %s"):format(notes_dir))
+      else
+        health.error(("notes_dir is not writable: %s"):format(notes_dir))
+      end
     end
-  end
 
-  -- Extension
-  local ext = nv.config.extension or "md"
-  health.info(("notes extension: .%s"):format(ext:gsub("^%.", "")))
+    -- Extension
+    local ext = nb.ext or "md"
+    health.info(("notes extension: .%s"):format(ext:gsub("^%.", "")))
+  end
 
   -- Feature flags
   if nv.config.auto_open_on_dir then

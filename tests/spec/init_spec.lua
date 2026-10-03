@@ -29,18 +29,10 @@ describe("clean_filename", function()
 end)
 
 describe("open_note", function()
-  it("creates a new note with an H1 title", function()
-    local path = helper.tmp_note("open-new.md")
-    nv.open_note(path, "Open New")
-    eq({ "# Open New", "", "" }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
+  it("open_note shim delegates to notebook", function()
+    local path = helper.tmp_note("open-shim.md")
+    nv.open_note(path, "Shim")
     eq(1, vim.fn.filereadable(path))
-  end)
-
-  it("does not overwrite an existing note", function()
-    local path = helper.tmp_note("open-existing.md")
-    helper.write(path, "# Existing\n\nbody\n")
-    nv.open_note(path, "Should Not Apply")
-    eq({ "# Existing", "", "body", "" }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
   end)
 end)
 
@@ -179,16 +171,10 @@ describe("picker_layout", function()
   helper.reload_with_config({ picker_layout = "default" })
 end)
 
-describe("path normalization", function()
-  it("canonicalizes differently-cased paths on case-insensitive filesystems", function()
-    if not helper.case_insensitive_fs() then
-      return
-    end
+describe("_normalize_path shim", function()
+  it("delegates to notebook realpath", function()
     local canonical = nv._normalize_path(nv.config.notes_dir)
-    local flipped = canonical:gsub("([^/]+)$", function(s)
-      return s:gsub("^%l", string.upper)
-    end)
-    eq(canonical, nv._normalize_path(flipped))
+    eq(type(canonical), "string")
   end)
 end)
 

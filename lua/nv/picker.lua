@@ -3,11 +3,6 @@ local nv = require("nv")
 
 local M = {}
 
--- Helper to turn prompt text into a clean filename
-local function clean_filename(prompt)
-  return nv.clean_filename(prompt)
-end
-
 -- Resolve the picker associated with the given snacks.win (input window),
 -- instead of relying on picker stack order.
 local function picker_from_win(win)
@@ -67,11 +62,16 @@ local function open_or_create(picker, item)
 
     if item and item.file then
       -- 1. Open existing note
-      nv.open_note(item.file)
+      local ok, err = nv.notebook():open_path(item.file)
+      if not ok and err then
+        vim.notify(tostring(err), vim.log.levels.ERROR)
+      end
     elseif current_line and current_line ~= "" then
       -- 2. Create new note with the prompt text
-      local filename = clean_filename(current_line)
-      nv.open_note(nv.config.notes_dir .. "/" .. filename, current_line)
+      local ok, err = nv.notebook():open(current_line)
+      if not ok and err then
+        vim.notify(tostring(err), vim.log.levels.ERROR)
+      end
     else
       print("nv.nvim: No search query or selection provided.")
     end

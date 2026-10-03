@@ -1,6 +1,17 @@
 -- lua/nv/init.lua
 local M = {}
 
+local notebook_cache = nil
+
+local function get_notebook()
+  if notebook_cache then
+    return notebook_cache
+  end
+  local Notebook = require("nv.notebook").Notebook
+  notebook_cache = Notebook.new(M.config)
+  return notebook_cache
+end
+
 -- Expose layouts module for user reference
 M.layouts = require("nv.layouts")
 
@@ -16,12 +27,20 @@ M.config = {
 }
 
 -- Setup function to override defaults
+function M.notebook()
+  return get_notebook()
+end
+
 function M.setup(user_opts)
   M.config = vim.tbl_deep_extend("force", M.config, user_opts or {})
+  notebook_cache = nil
 
-  -- Create the notes directory if it doesn't exist
-  if vim.fn.isdirectory(M.config.notes_dir) == 0 then
-    vim.fn.mkdir(M.config.notes_dir, "p")
+  local nb = get_notebook()
+  M.config.notes_dir = nb.root
+  M.config.extension = nb.ext
+  local ok, err = nb:ensure()
+  if not ok then
+    vim.notify(tostring(err or "failed to create notes directory"), vim.log.levels.ERROR)
   end
 
   -- Register WikiLink autocommands
@@ -64,22 +83,7 @@ end
 
 -- Open an existing note, or create it (with an H1 title) if it doesn't exist
 function M.open_note(filepath, title)
-  -- Ensure the parent directory exists
-  local dir = vim.fn.fnamemodify(filepath, ":h")
-  if vim.fn.isdirectory(dir) == 0 then
-    vim.fn.mkdir(dir, "p")
-  end
-
-  -- Check existence before editing so new-file detection isn't skewed by
-  -- buffers already loaded in memory
-  local is_new = vim.fn.filereadable(filepath) == 0
-  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
-
-  -- Only populate the H1 title for genuinely new notes
-  if is_new and title then
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# " .. title, "", "" })
-    vim.cmd("write")
-  end
+  return get_notebook():open_path(filepath, title)
 end
 
 -- Navigate WikiLink under cursor
@@ -149,10 +153,9 @@ function M.register_autocmds()
   -- In autocmd patterns `*` already matches across path separators, so a
   -- single pattern covers root and nested notes. Escape metacharacters in
   -- the directory path so it is matched literally.
-  local dir = vim.fn.expand(M.config.notes_dir):gsub("/+$", "")
-  local escaped_dir = vim.fn.escape(dir, "\\*?[]{}~$,")
+  local nb = get_notebook()
   local note_patterns = {
-    escaped_dir .. "/*." .. M.config.extension,
+    nb:autocmd_pattern(),
   }
 
   -- When entering a note buffer, map <CR> to follow WikiLinks
@@ -215,10 +218,8 @@ function M.register_autocmds()
           return
         end
 
-        local path = M._normalize_path(bufname)
-        local notes_path = M._normalize_path(M.config.notes_dir)
-
-        if path == notes_path then
+        local nb2 = get_notebook()
+        if nb2:is_root(bufname) then
           -- Defer by 50ms to allow lazy-loaded Neo-tree and directory explorer to finish rendering first
           vim.defer_fn(function()
             -- Close Neo-tree if it was opened
