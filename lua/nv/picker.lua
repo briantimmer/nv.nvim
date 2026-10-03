@@ -115,6 +115,7 @@ function M.search_notes()
     title = "Notational Velocity Notes",
     layout = resolve_layout(layout_option),
     confirm = open_or_create, -- Use open_or_create as the confirm action
+    live = true, -- Prevents error notifications when directory is empty
     win = {
       input = {
         keys = {
